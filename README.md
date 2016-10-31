@@ -12,7 +12,8 @@ LBTrimは画像ジェネレータ系のサービス向けに、画像のアップロード前にトリミング加工
 
 ## 動作デモ
 画像を指定して、トリミングを行うサンプルです。
-[Demo](http://luckybancho.ldblog.jp/lbtrim_demo.htm "Demo")
+
+<a href="http://luckybancho.ldblog.jp/lbtrim_demo.htm" target="_blank">Demo</a>
 
 
 ## セットアップ方法
