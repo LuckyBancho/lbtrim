@@ -9,7 +9,7 @@ LBTrimは画像ジェネレータ系のサービス向けに、画像のアップロード前にトリミング加工
 
 本ライブラリは、その機能をシンプルな形で提供することを目的としています。
 
-Blog: <a href="http://luckybancho.ldblog.jp/archives/48774944.html" target="_blank">LBTrim　- 画像ジェネレーターサービス向け汎用トリミングUIライブラリ</a>
+Blog: <a href="http://luckybancho.ldblog.jp/archives/48774944.html" target="_blank">LBTrim - 画像ジェネレーターサービス向け汎用トリミングUIライブラリ</a>
 
 
 ## 動作デモ
