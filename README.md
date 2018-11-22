@@ -52,91 +52,24 @@ LBTrimを使うには、*lbtrim.css*と*lbtrim.js*を読み込んでください。
 
 ## 呼び出しオプション
 
-<table>
-	<tr>
-		<th>オプション名</th>
-		<th>必須</th>
-		<th>内容</th>
-		<th>デフォルト値</th>
-	<tr>
-	<tr>
-		<td>upload_id</td>
-		<td>○</td>
-		<td>ユーザーが画像ファイルをアップロードする領域を指定する。</td>
-		<td>-</td>
-	</tr>
-	<tr>
-		<td>trim_id</td>
-		<td>○</td>
-		<td>トリミング後の画像の切り出し先（IMG要素かCANVAS要素）を指定する。トリミングの縦横比はこの要素のサイズに固定される。</td>
-		<td>-</td>
-	</tr>
-
-
-	<tr>
-		<td>rotate_button</td>
-		<td>&nbsp;</td>
-		<td>画像の回転ボタンの有効/無効</td>
-		<td>false</td>
-	</tr>
-	<tr>
-		<td>title</td>
-		<td>&nbsp;</td>
-		<td>切り取り画面のタイトルを指定する</td>
-		<td>範囲を指定して,切り取りボタンかダブルクリックで切り取ってください</td>
-	</tr>
-	<tr>
-		<td>upload_area_message</td>
-		<td>&nbsp;</td>
-		<td>ファイルをアップロードするエリアのメッセージを指定する</td>
-		<td>クリックしてファイルを選択するかここにドラッグ＆ドロップしてください</td>
-	</tr>
-	<tr>
-		<td>cut_button_message</td>
-		<td>&nbsp;</td>
-		<td>切り抜きボタンのメッセージを指定する</td>
-		<td>切り抜き</td>
-	</tr>
-	<tr>
-		<td>close_button_message</td>
-		<td>&nbsp;</td>
-		<td>切り抜き画面を閉じるボタンのメッセージを指定する</td>
-		<td>閉じる</td>
-	</tr>
-	<tr>
-		<td>maximize_button_message</td>
-		<td>&nbsp;</td>
-		<td>切り抜き領域の最大化ボタンのメッセージを指定する</td>
-		<td>最大化</td>
-	</tr>
-	<tr>
-		<td>rotate_button_message</td>
-		<td>&nbsp;</td>
-		<td>回転ボタンのメッセージを指定する</td>
-		<td>回転</td>
-	</tr>
-	<tr>
-		<td>onCutFinished</td>
-		<td>&nbsp;</td>
-		<td>関数をセットすることで、トリミング後に実行する</td>
-		<td>なし</td>
-	</tr>
-</table>
+| オプション名 |必須 | 内容 | デフォルト値 |
+| --- | --- | --- | --- |
+| upload_id | ○ | ユーザーが画像ファイルをアップロードする領域を指定する。 | - |
+| trim_id | ○ | トリミング後の画像の切り出し先（IMG要素かCANVAS要素）を指定する。トリミングの縦横比はこの要素のサイズに固定される。 | - |
+| rotate_button | | 画像の回転ボタンの有効・無効 | false |
+| title||切り取り画面のタイトルを指定する|範囲を指定して,切り取りボタンかダブルクリックで切り取ってください |
+| upload_area_message | | ファイルをアップロードするエリアのメッセージを指定する|クリックしてファイルを選択するかここにドラッグ＆ドロップしてください |
+| cut_button_message | | 切り抜きボタンのメッセージを指定する|切り抜き|
+| close_button_message | | 切り抜き画面を閉じるボタンのメッセージを指定する | 閉じる |
+| maximize_button_message | | 切り抜き領域の最大化ボタンのメッセージを指定する | 最大化 |
+| rotate_button_message | | 回転ボタンのメッセージを指定する | 回転 |
+| onCutFinished | | 関数をセットすることで、トリミング後に実行する | なし |
 
 ## メソッド
 
-<table>
-	<tr>
-		<th>メソッド名</th>
-		<th>引数</th>
-		<th>内容</th>
-	<tr>
-	<tr>
-		<td>openTrimWindow</td>
-		<td>なし</td>
-		<td>トリミング画面を再度開く（イメージ再アップロード無しに再トリミングできます）</td>
-	</tr>
-</table>
+| メソッド名 | 引 数 | 内容 |
+| --- | --- | --- |
+| openTrimWindow | なし | トリミング画面を再度開く（イメージ再アップロード無しに再トリミングできます） |
 
 ## 更新履歴
 2018/11/23	回転ボタン機能を追加。複数インスタンス化に対応。
