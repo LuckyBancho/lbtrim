@@ -1,6 +1,6 @@
 /*!
  * Image Trimming UI Libraly
- * Version 0.1
+ * Version 1.0
  * Requires jQuery v1.7 or later,jQuery blockUI plugin
  *
  * Examples at: http://luckybancho.ldblog.jp/
@@ -10,17 +10,17 @@
  *
  
  */
-
+ 
+var lb_cnt=0;
 var Lb_Trim = function(param){
 	//コンストラクタ
 	
-	
 	//クロージャ中の参照のコピー
 	var lb = this;
-	
+	lb_cnt +=1;
 	
 	//要素のIDを生成
-	this.rand_id = (new Date()).getTime();
+	this.rand_id = (new Date()).getTime() + lb_cnt;	
 	this.canvas_id ="lbtrim_panel"+this.rand_id;
 	this.canvas_frame_id ="lbtrim_panelframe"+this.rand_id;
 	this.cut_butoon_id ="lbtrim_cutbtn"+this.rand_id;
@@ -51,7 +51,15 @@ var Lb_Trim = function(param){
 	if(param.maximize_button_message){
 		btn_maximize = param.maximize_button_message;
 	}
-	
+
+	var btn_rotate = null;
+	if(param.rotate_button){
+		btn_rotate = "回転";
+		if(param.rotate_button_message){
+			btn_rotate = param.rotate_button_message;
+		}
+	}
+
 	
 	this.onCutFinished=null;
 	if(param.onCutFinished){
@@ -60,7 +68,7 @@ var Lb_Trim = function(param){
 		}
 	}
 	
-	this.draw_canvus_area(canvas_title,btn_msg,btn_close,btn_maximize);
+	this.draw_canvus_area(canvas_title,btn_msg,btn_close,btn_maximize,btn_rotate);
 	this.draw_upload_area(param.upload_id,dd_msg);
 
 	this.setCanvusSize = function(){
@@ -128,8 +136,7 @@ var Lb_Trim = function(param){
 	this.canvas = null;
 	this.ctx = null;		//トリミング用キャンパス
 	this.image;				//読み込みイメージ
-//orgImageは画像調整機能が入るまで不要（メモリ節約のためコメントアウト
-//	this.orgImage;			//オリジナルイメージ
+	this.orgImage;			//オリジナルイメージ
 	this.iMouseX=1;
 	this.iMouseY = 1;	//マウス位置
 	this.theSelection;		//選択状態
@@ -139,12 +146,13 @@ var Lb_Trim = function(param){
 	this.pRate=1;					//拡大率
 	this.rPRate=1; //割り算を掛け算にするためのpRateの逆数
 	this.lastTap;
+	this.rotate = 0; // 90度回転数(0～3)
 
 	
 
     //ロードした画像のオブジェクト
     this.image = new Image();
-//    this.orgImage = new Image();
+    this.orgImage = null;
 
     // キャンバスオブジェクトを生成
     this.canvas = document.getElementById(this.canvas_id);
@@ -199,8 +207,8 @@ var Lb_Trim = function(param){
 
 
 (function(){
-	Lb_Trim.prototype.draw_canvus_area = function(canvas_title,btn_msg,btn_close,btn_maximize) {
-		$('body').append('<div id="'+this.canvas_wrap_id+'" class="lb_trim_area"><div class="lb_trim_title">'+canvas_title+'</div><div id="'+this.canvas_frame_id+'" class="lb_framearea" ><canvas id="'+this.canvas_id+'"></canvas></div><button id="'+this.cut_butoon_id+'" class="shiny-button">'+btn_msg+'</button><button id="maximize_'+this.cut_butoon_id+'" class="shiny-button">'+btn_maximize+'</button><button id="close_'+this.cut_butoon_id+'" class="shiny-button">'+btn_close+'</button></div>');
+	Lb_Trim.prototype.draw_canvus_area = function(canvas_title,btn_msg,btn_close,btn_maximize,btn_rotate) {
+		$('body').append('<div id="'+this.canvas_wrap_id+'" class="lb_trim_area"><div class="lb_trim_title">'+canvas_title+'</div><div id="'+this.canvas_frame_id+'" class="lb_framearea" ><canvas id="'+this.canvas_id+'"></canvas></div><button id="'+this.cut_butoon_id+'" class="shiny-button">'+btn_msg+'</button>' + (btn_rotate==null ? "" :  '<button id="rotate_'+this.cut_butoon_id+'" class="shiny-button">'+btn_rotate+'</button>' ) + '<button id="maximize_'+this.cut_butoon_id+'" class="shiny-button">'+btn_maximize+'</button><button id="close_'+this.cut_butoon_id+'" class="shiny-button">'+btn_close+'</button></div>');
 		
 		var panel = $("#"+this.canvas_id);
 		var button = $("#"+this.cut_butoon_id);
@@ -255,7 +263,10 @@ var Lb_Trim = function(param){
 			lb.maximizeSelection();
 		});
 
-
+		var rotate_button=$("#rotate_"+this.cut_butoon_id);
+		rotate_button.click(function(){
+			lb.rotateImage();
+		});
 	
 		
 		//イベント中の参照のコピー
@@ -606,77 +617,16 @@ var Lb_Trim = function(param){
 			reader.onload = function(evt) {
 				// 画像がloadされた後に、canvasに描画する
 				lb.image.onload = function() {
-
-		   	    	//パネルサイズとの比率が近い方にオートスケール
-					if((lb.image.width  / lb.panelMaxW ) > (lb.image.height  / lb.panelMaxH )){
-						//幅優先
-						lb.canvasX = lb.panelMaxW;
-						lb.pRate = lb.panelMaxW / lb.image.width;
-						lb.rPRate = lb.image.width / lb.panelMaxW;
-						lb.canvasY = (lb.image.height * lb.pRate) | 0;
-
-						//クリップ領域より画像が小さかった場合、クリップ領域を画像領域の８割に縮小
-						if(lb.image.width < lb.clipW ){
-							var cw = lb.image.width * 0.8;
-							var ch = lb.clipH * (cw / lb.clipW );
-							lb.clipW = cw;
-							lb.clipH = ch;
-						}
-					}else{
-						//高さ優先
-						lb.canvasY = lb.panelMaxH;
-						lb.pRate = lb.panelMaxH / lb.image.height;
-						lb.rPRate = lb.image.height / lb.panelMaxH;
-						lb.canvasX = (lb.image.width * lb.pRate) | 0;
-						
-						//クリップ領域より画像が小さかった場合、クリップ領域を画像領域の８割に縮小
-						if(lb.image.height  < lb.clipH ){
-							var ch = lb.image.height * 0.8;
-							var cw = lb.clipW * (ch / lb.clipH );
-							lb.clipW = cw;
-							lb.clipH = ch;
-						}
-					}
-					
-					//選択範囲の初期値
-					var iFW, iFH,iFX,iFY;
-
-					//パネルサイズとの比率が近い方にオートスケール
-					//縦横、最大化してどちらが先に限界がくるか。
-					if((lb.image.width  / lb.clipW ) < (lb.image.height  / lb.clipH )){
-						//幅が先に限界がくる場合
-						
-						iFX = 0;
-						iFW =  lb.canvasX;
-						iFH = lb.clipH * (iFW / lb.clipW );
-						iFY = (lb.canvasY - iFH)/2;
-
-					}else{
-						//縦が先に限界がくる場合
-						iFY = 0;
-						iFH = lb.canvasY;
-						iFW = lb.clipW * (iFH / lb.clipH );
-						iFX = (lb.canvasX - iFW)/2;
-						
-					}					
-					
+					lb.initCanvasScale();
 					
 				    lb.loaded =true;
-			        //スクロールを初期値にもどす
-			        $("#"+lb.canvas_frame_id).scrollTop(0).scrollLeft(0);
-			        
-			        
-			        //選択の初期化
-			        lb.theSelection = lb.createSelection(lb.ctx,iFX, iFY, iFW, iFH);
-			        
-//			        lb.orgImage = lb.imgClone(lb.image);
-			        $("#"+lb.canvas_frame_id).css("height",lb.canvasY +10);
+
+        
 //			        initBar();
 			        lb.drawScene();			        
 			        //トリミング画面をオーバーレイ表示
 			        lb.openTrimWindow();
 			        
-
 					
 
 			        if(lb.created ==false){
@@ -687,7 +637,6 @@ var Lb_Trim = function(param){
 				}
 				// 画像のURLをソースに設定
 				lb.image.src = evt.target.result;
-//				lb.orgImage.src = evt.target.result;
 		    }
 		    // ファイルを読み込み、データをBase64でエンコードされたデータURLにして返す
 		    
@@ -707,18 +656,84 @@ var Lb_Trim = function(param){
 		});
 	};//end of draw_upload_area
 	
+	Lb_Trim.prototype.initCanvasScale = function(){
+		var lb = this;
+	   	//パネルサイズとの比率が近い方にオートスケール
+		if((lb.image.width  / lb.panelMaxW ) > (lb.image.height  / lb.panelMaxH )){
+			//幅優先
+			lb.canvasX = lb.panelMaxW;
+			lb.pRate = lb.panelMaxW / lb.image.width;
+			lb.rPRate = lb.image.width / lb.panelMaxW;
+			lb.canvasY = (lb.image.height * lb.pRate) | 0;
+
+			//クリップ領域より画像が小さかった場合、クリップ領域を画像領域の８割に縮小
+			if(lb.image.width < lb.clipW ){
+				var cw = lb.image.width * 0.8;
+				var ch = lb.clipH * (cw / lb.clipW );
+				lb.clipW = cw;
+				lb.clipH = ch;
+			}
+		}else{
+			//高さ優先
+			lb.canvasY = lb.panelMaxH;
+			lb.pRate = lb.panelMaxH / lb.image.height;
+			lb.rPRate = lb.image.height / lb.panelMaxH;
+			lb.canvasX = (lb.image.width * lb.pRate) | 0;
+			
+			//クリップ領域より画像が小さかった場合、クリップ領域を画像領域の８割に縮小
+			if(lb.image.height  < lb.clipH ){
+				var ch = lb.image.height * 0.8;
+				var cw = lb.clipW * (ch / lb.clipH );
+				lb.clipW = cw;
+				lb.clipH = ch;
+			}
+		}
+
+
+		//選択範囲の初期値
+		var iFW, iFH,iFX,iFY;
+
+		//パネルサイズとの比率が近い方にオートスケール
+		//縦横、最大化してどちらが先に限界がくるか。
+		if((lb.image.width  / lb.clipW ) < (lb.image.height  / lb.clipH )){
+			//幅が先に限界がくる場合
+			
+			iFX = 0;
+			iFW =  lb.canvasX;
+			iFH = lb.clipH * (iFW / lb.clipW );
+			iFY = (lb.canvasY - iFH)/2;
+
+		}else{
+			//縦が先に限界がくる場合
+			iFY = 0;
+			iFH = lb.canvasY;
+			iFW = lb.clipW * (iFH / lb.clipH );
+			iFX = (lb.canvasX - iFW)/2;
+			
+		}
+        //スクロールを初期値にもどす
+        $("#"+lb.canvas_frame_id).scrollTop(0).scrollLeft(0);
+        
+        //選択の初期化
+        lb.theSelection = lb.createSelection(lb.ctx,iFX, iFY, iFW, iFH);
+		$("#"+lb.canvas_frame_id).css("height",lb.canvasY +10);
+
+	}
+	
 	Lb_Trim.prototype.drawScene = function() { // main drawScene function
 	    if(false == this.loaded) return;
 	    
-	    this.ctx.canvas.width=(this.canvasX * this.currentCanvasScale)|0;
-	    this.ctx.canvas.height=(this.canvasY * this.currentCanvasScale)|0;
-	    // 元画像を描画
-	    this.ctx.drawImage(this.image, 0, 0,this.image.width,this.image.height,0,0,(this.canvasX * this.currentCanvasScale)|0,(this.canvasY * this.currentCanvasScale)|0);
-
+	    var canvasW=(this.canvasX * this.currentCanvasScale)|0;
+	    var canvasH=(this.canvasY * this.currentCanvasScale)|0;
+	    
+    	this.ctx.canvas.width=canvasW;
+    	this.ctx.canvas.height=canvasH;
+		// 元画像を描画
+		this.ctx.drawImage(this.image, 0, 0,this.image.width,this.image.height,0,0,canvasW,canvasH);
 
 		//領域外以外マスク
 	    this.ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
-	    this.ctx.fillRect(0, 0,this.ctx.canvas.width, this.ctx.canvas.height);
+	    this.ctx.fillRect(0, 0,canvasW, canvasH); 	//回転が効いてるのでオリジナルの向きで指定
 
 	    //選択領域を描画
 	    this.theSelection.draw();
@@ -797,6 +812,75 @@ var Lb_Trim = function(param){
 		}
 		lb.drawScene();
 	}	// maximizeSelection
+	
+	
+	Lb_Trim.prototype.rotateImage = function (){
+		var lb = this;
+		lb.rotate += 1;
+		if(lb.rotate == 4){
+			lb.rotate = 0;
+		}
+		
+		if(lb.orgImage == null){
+			lb.orgImage = lb.image;
+		}
+			
+		if(lb.rotate > 0){
+
+		    var dist_canvas,dist_ctx;
+		    dist_canvas = document.createElement('canvas');
+		    dist_ctx = dist_canvas.getContext('2d');
+		    
+		    if(lb.rotate == 0 || lb.rotate == 2){	    
+			    dist_canvas.width = lb.orgImage.width;
+			    dist_canvas.height = lb.orgImage.height;
+			}else{
+			    dist_canvas.width = lb.orgImage.height;
+			    dist_canvas.height = lb.orgImage.width;
+			}
+
+			var theta = lb.rotate * 90 * Math.PI / 180;
+			dist_ctx.rotate(theta);
+			if(lb.rotate == 1){
+				//90度
+				dist_ctx.translate(0,-lb.orgImage.height);
+			}else if(lb.rotate == 2){
+				//180度
+				dist_ctx.translate(-lb.orgImage.width, -lb.orgImage.height);
+			}else{
+				//270度
+				dist_ctx.translate(-lb.orgImage.width,0);
+			}
+		    dist_ctx.drawImage(lb.orgImage, 0,0);
+		    var vData = dist_canvas.toDataURL('image/png');
+		    var newImage=new Image();
+		    newImage.src = vData;
+			newImage.onload = function(){
+				dist_canvas=null;
+				dist_ctx=null; 
+				vData=null;
+				lb.image = newImage;
+				lb.initCanvasScale();
+				$.unblockUI({ fadeOut: 0 });
+				setTimeout(function(){
+					lb.openTrimWindow();
+					lb.drawScene();
+				},100);
+
+			}
+		}else{
+			lb.image = lb.orgImage;
+			lb.initCanvasScale();
+			$.unblockUI({ fadeOut: 0 });
+			setTimeout(function(){
+				lb.openTrimWindow();
+				lb.drawScene();
+			},100);
+
+		}
+		
+
+	}	// rotateImage
 	
 
 	

@@ -71,6 +71,14 @@ LBTrimを使うには、*lbtrim.css*と*lbtrim.js*を読み込んでください。
 		<td>トリミング後の画像の切り出し先（IMG要素かCANVAS要素）を指定する。トリミングの縦横比はこの要素のサイズに固定される。</td>
 		<td>-</td>
 	</tr>
+
+
+	<tr>
+		<td>rotate_button</td>
+		<td>&nbsp;</td>
+		<td>画像の回転ボタンの有効/無効</td>
+		<td>false</td>
+	</tr>
 	<tr>
 		<td>title</td>
 		<td>&nbsp;</td>
@@ -102,6 +110,12 @@ LBTrimを使うには、*lbtrim.css*と*lbtrim.js*を読み込んでください。
 		<td>最大化</td>
 	</tr>
 	<tr>
+		<td>rotate_button_message</td>
+		<td>&nbsp;</td>
+		<td>回転ボタンのメッセージを指定する</td>
+		<td>回転</td>
+	</tr>
+	<tr>
 		<td>onCutFinished</td>
 		<td>&nbsp;</td>
 		<td>関数をセットすることで、トリミング後に実行する</td>
@@ -123,3 +137,7 @@ LBTrimを使うには、*lbtrim.css*と*lbtrim.js*を読み込んでください。
 		<td>トリミング画面を再度開く（イメージ再アップロード無しに再トリミングできます）</td>
 	</tr>
 </table>
+
+## 更新履歴
+2018/11/23	回転ボタン機能を追加。複数インスタンス化に対応。
+2016/10/31	公開
