@@ -19,12 +19,14 @@ Blog: <a href="http://luckybancho.ldblog.jp/archives/48774944.html" target="_bla
 
 ## 使用例
 <a href="https://luckybancho.ldblog.jp/ff14gcc.html" target="_blank">FF14GuildleveCharacterCard！</a>
+
 <a href="https://luckybancho.ldblog.jp/uchinoko.html" target="_blank">うちの固！</a>
+
 <a href="https://luckybancho.ldblog.jp/uncyclopediaeorzea.html" target="_blank">Uncyclopedia Eorzea</a>
 
 
 ## セットアップ方法
-LBTrimはjQueryとjQuery blockUIが必要です。jQuery1.7以上であれば動くと思いますが、検証はしていません。
+LBTrimは<a href="https://jquery.com/" target="_blank">jQuery</a>と<a href="https://jquery.malsup.com/block/" target="_blank">jQuery blockUI</a>が必要です。jQuery1.7以上であれば動くと思いますが、検証はしていません。
 
 LBTrimを使うには、*lbtrim.css*と*lbtrim.js*を読み込んでください。
 
