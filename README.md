@@ -17,6 +17,11 @@ Blog: <a href="http://luckybancho.ldblog.jp/archives/48774944.html" target="_bla
 
 <a href="http://luckybancho.ldblog.jp/lbtrim_demo.htm" target="_blank">Demo</a>
 
+## 使用例
+<a href="https://luckybancho.ldblog.jp/ff14gcc.html" target="_blank">FF14GuildleveCharacterCard！</a>
+<a href="https://luckybancho.ldblog.jp/uchinoko.html" target="_blank">うちの固！</a>
+<a href="https://luckybancho.ldblog.jp/uncyclopediaeorzea.html" target="_blank">Uncyclopedia Eorzea</a>
+
 
 ## セットアップ方法
 LBTrimはjQueryとjQuery blockUIが必要です。jQuery1.7以上であれば動くと思いますが、検証はしていません。
@@ -44,6 +49,7 @@ LBTrimを使うには、*lbtrim.css*と*lbtrim.js*を読み込んでください。
  * トリミング先をクリックすることで、再びトリミング画面が開き、トリミングのやり直しを行うことができます。
  * トリミング領域外、もしくは「閉じる」ボタン押下でトリミング画面を閉じることができます。
  * 一つの画面で複数のトリミングボタンを設置することが可能です。
+ * ファイルアップロードの代わりにトリミングウィンドウを画像コピペで呼び出せます。単体使用の場合はBody全域、複数指定の場合はデフォルトでアップロードボタン上がペースト呼び出し領域になります。複数指定の場合のペースト領域はオプションでID指定(配列で複数可)です。
 
 ## オプション機能
  * トリミング画面の各種説明テキストは、呼び出し時のオプションで設定可能です。
@@ -64,6 +70,9 @@ LBTrimを使うには、*lbtrim.css*と*lbtrim.js*を読み込んでください。
 | maximize_button_message | | 切り抜き領域の最大化ボタンのメッセージを指定する | 最大化 |
 | rotate_button_message | | 回転ボタンのメッセージを指定する | 回転 |
 | onCutFinished | | 関数をセットすることで、トリミング後に実行する | なし |
+| image_paste_area | | ファイルアップロードの代わりにトリミングウィンドウを画像コピペで呼び出す領域の対象IDを指定。複数の場合は配列で指定 | なし |
+
+
 
 ## メソッド
 
@@ -72,6 +81,8 @@ LBTrimを使うには、*lbtrim.css*と*lbtrim.js*を読み込んでください。
 | openTrimWindow | なし | トリミング画面を再度開く（イメージ再アップロード無しに再トリミングできます） |
 
 ## 更新履歴
+ 2022/8/21	画像コピペに対応
+
  2018/11/23	回転ボタン機能を追加。複数インスタンス化に対応。
 
  2016/10/31	公開

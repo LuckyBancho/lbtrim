@@ -1,6 +1,6 @@
 /*!
  * Image Trimming UI Libraly
- * Version 1.0
+ * Version 0.1
  * Requires jQuery v1.7 or later,jQuery blockUI plugin
  *
  * Examples at: http://luckybancho.ldblog.jp/
@@ -10,22 +10,24 @@
  *
  
  */
- 
-var lb_cnt=0;
+
 var Lb_Trim = function(param){
 	//コンストラクタ
 	
+	
 	//クロージャ中の参照のコピー
 	var lb = this;
-	lb_cnt +=1;
+	
 	
 	//要素のIDを生成
-	this.rand_id = (new Date()).getTime() + lb_cnt;	
+	this.rand_id = (new Date()).getTime();
 	this.canvas_id ="lbtrim_panel"+this.rand_id;
 	this.canvas_frame_id ="lbtrim_panelframe"+this.rand_id;
 	this.cut_butoon_id ="lbtrim_cutbtn"+this.rand_id;
 	this.canvas_wrap_id ="lbtrim_panelwrap"+this.rand_id;
 	this.trimming_target_id=param.trim_id;
+	this.on_mouse_in_btn=false;
+
 	
 	//必要な画面要素の生成（サイズを取得するためにこのタイミングで）
 	var canvas_title="範囲を指定して,切り取りボタンかダブルクリックで切り取ってください";
@@ -33,10 +35,18 @@ var Lb_Trim = function(param){
 		canvas_title = param.title;
 	}
 	
-	var dd_msg="クリックしてファイルを選択するかここにドラッグ＆ドロップしてください";
+	var dd_msg="ファイルを選択,またはここにドラッグ＆ドロップか画像をペーストしてください";
 	if(param.upload_area_message){
 		dd_msg = param.upload_area_message;
 	}
+	
+	//コピペで画像の読み込みを指定するエリア。
+	//無指定はLbtrimが１個なら画面全体、複数なら読み込みボタンの上のデフォルトの設定に従う。
+	this.image_paste_area = null;
+	if(param.image_paste_area){
+		this.image_paste_area = param.image_paste_area;
+	}
+	
 
 	var btn_msg="切り抜き";
 	if(param.cut_button_message){
@@ -59,7 +69,11 @@ var Lb_Trim = function(param){
 			btn_rotate = param.rotate_button_message;
 		}
 	}
-
+	$(document).keyup(function(e) {
+	     if (e.key === "Escape") {
+	     	$.unblockUI();
+	    }
+	});
 	
 	this.onCutFinished=null;
 	if(param.onCutFinished){
@@ -210,6 +224,7 @@ var Lb_Trim = function(param){
 	Lb_Trim.prototype.draw_canvus_area = function(canvas_title,btn_msg,btn_close,btn_maximize,btn_rotate) {
 		$('body').append('<div id="'+this.canvas_wrap_id+'" class="lb_trim_area"><div class="lb_trim_title">'+canvas_title+'</div><div id="'+this.canvas_frame_id+'" class="lb_framearea" ><canvas id="'+this.canvas_id+'"></canvas></div><button id="'+this.cut_butoon_id+'" class="shiny-button">'+btn_msg+'</button>' + (btn_rotate==null ? "" :  '<button id="rotate_'+this.cut_butoon_id+'" class="shiny-button">'+btn_rotate+'</button>' ) + '<button id="maximize_'+this.cut_butoon_id+'" class="shiny-button">'+btn_maximize+'</button><button id="close_'+this.cut_butoon_id+'" class="shiny-button">'+btn_close+'</button></div>');
 		
+
 		var panel = $("#"+this.canvas_id);
 		var button = $("#"+this.cut_butoon_id);
 
@@ -246,17 +261,22 @@ var Lb_Trim = function(param){
 			}, false);
 		p.addEventListener("touchend", mouseup, false);
 	    panel.css('cursor','pointer');
-
-
 		
 		button.click(trim_image);
-		
-		
-		
+
 		var closebth=$("#close_"+this.cut_butoon_id);
-		closebth.click(function(){
-			$.unblockUI();
-		});
+		if(closebth){
+			closebth.click(function(){
+				$.unblockUI();
+			});
+		}else{
+			setTimeout(function(){
+				var closebth=$("#close_"+this.cut_butoon_id);
+				closebth.click(function(){
+					$.unblockUI();
+				});
+			},10);
+		}
 		
 		var maximize_button=$("#maximize_"+this.cut_butoon_id);
 		maximize_button.click(function(){
@@ -597,12 +617,40 @@ var Lb_Trim = function(param){
 		}
 		
 	}// end of draw_canvus_area
-	
+
+
+
+
+
 	Lb_Trim.prototype.draw_upload_area = function(upload_id,dd_msg) {
-		$('#'+upload_id).append('<div class="lb_trim_upfile_wrap" >'+dd_msg+'<input id="lb_trim_upfile'+ this.rand_id +'" type="file"></div>');
+		$('#'+upload_id).append('<div class="lb_trim_upfile_wrap" >'+dd_msg+'<input id="lb_trim_upfile'+ this.rand_id +'" type="file" ></div>');
 		
 		//イベント中の参照のコピー
 		var lb = this;
+
+		var readerOnload = function(event){
+			//イベント中の参照のコピー
+			// 画像がloadされた後に、canvasに描画する
+			lb.image.onload = function() {
+				lb.initCanvasScale();
+				
+			    lb.loaded =true;
+		        lb.drawScene();
+		        //トリミング画面をオーバーレイ表示
+	       		setTimeout(function(){
+			        lb.openTrimWindow();
+		        },10);
+		        if(lb.created ==false){
+		        	$("#"+lb.trimming_target_id).click(function(){
+		        		setTimeout(function(){
+		        			lb.openTrimWindow();
+		        		},100);
+		        	});
+		        }
+			}
+			// 画像のURLをソースに設定
+			lb.image.src = event.target.result;
+		}
 		
 		$("#lb_trim_upfile"+ this.rand_id).change(function() {
 		    var canvas = $("#"+lb.canvas_id);
@@ -614,30 +662,9 @@ var Lb_Trim = function(param){
 		    var reader = new FileReader();
 
 		    // File APIを使用し、ローカルファイルを読み込む
-			reader.onload = function(evt) {
-				// 画像がloadされた後に、canvasに描画する
-				lb.image.onload = function() {
-					lb.initCanvasScale();
-					
-				    lb.loaded =true;
-
-        
-//			        initBar();
-			        lb.drawScene();			        
-			        //トリミング画面をオーバーレイ表示
-			        lb.openTrimWindow();
-			        
-					
-
-			        if(lb.created ==false){
-			        	$("#"+lb.trimming_target_id).click(function(){
-			        		lb.openTrimWindow();
-			        	});
-			        }
-				}
-				// 画像のURLをソースに設定
-				lb.image.src = evt.target.result;
-		    }
+			reader.onload = readerOnload;
+			
+			
 		    // ファイルを読み込み、データをBase64でエンコードされたデータURLにして返す
 		    
 		    $.blockUI({ message:"loading."});
@@ -648,12 +675,57 @@ var Lb_Trim = function(param){
 		    	};
 		    },5000);
 		    lb.setCanvusSize();
-
-
 		    reader.readAsDataURL(file);
 			lb.currentCanvasScale=1;
+		})
+		
+		$('#'+upload_id).mouseover(function(){
+			lb.on_mouse_in_btn = true;
+		});	
+		$('#'+upload_id).mouseout(function(){
+			lb.on_mouse_in_btn=false;
+		});	
 
+		//画像コピペでイメージクリップを起動
+		var p_target = false;
+		var p_target_area = "body";
+		if(this.image_paste_area){
+			p_target_area="#";
+			if(Array.isArray(this.image_paste_area)){
+				p_target_area += this.image_paste_area.join(',#');
+			}else{
+				p_target_area += this.image_paste_area;
+			}
+			p_target = true;
+		}
+		$(p_target_area).bind('paste', function(ce) {
+			//image_paste_areaに無指定なら複数起動していたらマウスオーバーを見る
+			if(p_target == false){
+				if($("div.lb_trim_upfile_wrap").length > 1){
+					if (lb.on_mouse_in_btn == false){return};
+				}
+			}
+			
+		    var item = ce.originalEvent.clipboardData.files[0];
+			if (item){}else{return};
+		    if (item.type.indexOf("image") === 0){
+		        var reader = new FileReader();
+			    reader.onload = readerOnload;
+
+			    $.blockUI({ message:"loading."});
+			    setTimeout(function(){
+			    	if(lb.loaded==false){
+			    		alert("読み込みに失敗しました。もう一度画像を指定してください。");
+			    		$.unblockUI();
+			    	};
+			    },5000);
+		        
+			    lb.setCanvusSize();
+		        reader.readAsDataURL(item);
+       			lb.currentCanvasScale=1;
+			}
 		});
+		
 	};//end of draw_upload_area
 	
 	Lb_Trim.prototype.initCanvasScale = function(){
