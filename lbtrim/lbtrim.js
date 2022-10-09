@@ -20,7 +20,8 @@ var Lb_Trim = function(param){
 	
 	
 	//要素のIDを生成
-	this.rand_id = (new Date()).getTime();
+	var rn= Math.floor(Math.random() * 10000000);
+	this.rand_id = rn;
 	this.canvas_id ="lbtrim_panel"+this.rand_id;
 	this.canvas_frame_id ="lbtrim_panelframe"+this.rand_id;
 	this.cut_butoon_id ="lbtrim_cutbtn"+this.rand_id;
